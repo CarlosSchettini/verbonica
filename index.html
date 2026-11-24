@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>VerboMágico - Espanhol</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ec4899" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #fdf2f8 0%, #eff6ff 50%, #f5f3ff 100%);
+      color: #1e293b;
+      min-height: 100vh;
+      padding-bottom: 48px;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #fce7f3;
+      padding: 12px 16px;
+    }
+    .header-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-emoji { font-size: 28px; }
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: #db2777;
+    }
+    .brand p { margin: 0; font-size: 11px; color: #64748b; font-weight: 600; }
+    .stats { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .badge {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .badge-streak { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-xp { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+    .btn-grim {
+      background: linear-gradient(90deg, #6366f1, #9333ea);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    main {
+      max-width: 720px;
+      margin: 16px auto 0;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 10px 25px -8px rgba(219, 39, 119, 0.14);
+      border: 1px solid #f3e8ff;
+    }
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .label-muted {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+    }
+    .mode-switch {
+      display: inline-flex;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 12px;
+      gap: 2px;
+    }
+    .mode-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 10px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background: #fff;
+      color: #db2777;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pill.active {
+      background: linear-gradient(90deg, #ec4899, #8b5cf6);
+      color: #fff;
+      border-color: transparent;
+    }
+    .q-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tense-tag {
+      background: #fce7f3;
+      color: #be185d;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .verb-type { font-size: 12px; font-weight: 700; color: #94a3b8; }
+    .prompt-box { text-align: center; margin: 12px 0 18px; }
+    .verb-pill {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      background: #fdf2f8;
+      border: 1px solid #fbcfe8;
+      padding: 10px 20px;
+      border-radius: 18px;
+    }
+    .verb-inf { font-size: 28px; font-weight: 900; color: #0f172a; }
+    .verb-mean { font-size: 14px; font-weight: 700; color: #ec4899; }
+    .pronoun-line { margin-top: 14px; font-size: 16px; color: #475569; font-weight: 700; }
+    .pronoun-val { font-size: 24px; font-weight: 900; color: #4f46e5; text-decoration: underline wavy #f472b6; }
+    .sentence-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .sentence-es { margin: 0; font-size: 16px; font-weight: 800; color: #1e293b; }
+    .sentence-pt { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 600px) {
+      .choices { grid-template-columns: 1fr 1fr; }
+    }
+    .opt-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      border: 2px solid #e2e8f0;
+      background: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      cursor: pointer;
+    }
+    .opt-btn:hover:not(:disabled) { border-color: #f472b6; background: #fdf2f8; }
+    .opt-btn.correct { border-color: #10b981; background: #ecfdf5; color: #065f46; }
+    .opt-btn.wrong { border-color: #f43f5e; background: #fff1f2; color: #9f1239; }
+    .type-area { display: none; flex-direction: column; gap: 10px; }
+    .type-area.active { display: flex; }
+    .type-input {
+      width: 100%;
+      padding: 13px;
+      border-radius: 16px;
+      border: 2px solid #ddd6fe;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .accents { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .acc-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .primary-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #ec4899, #7c3aed);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .next-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 16px;
+      background: #0f172a;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .feedback {
+      display: none;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 2px dashed #e2e8f0;
+    }
+    .feedback.active { display: block; }
+    .banner {
+      padding: 14px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .banner.ok { background: #d1fae5; color: #065f46; }
+    .banner.err { background: #ffe4e6; color: #9f1239; }
+    .table-card {
+      background: #eef2ff;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .conj-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (min-width: 600px) {
+      .conj-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .conj-cell {
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 12px;
+    }
+    .conj-cell.highlight {
+      background: #fce7f3;
+      border: 1px solid #f472b6;
+      font-weight: 800;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 50;
+      padding: 16px;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: 24px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 82vh;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .close-btn {
+      border: none;
+      background: #f1f5f9;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .tip-item {
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-emoji">🦙</span>
+        <div>
+          <h1>VerboMágico</h1>
+          <p>Espanhol Interativo</p>
+        </div>
+      </div>
+      <div class="stats">
+        <span class="badge badge-streak">🔥 <span id="streak-val">0</span></span>
+        <span class="badge badge-xp">⭐ <span id="xp-val">0</span> XP</span>
+        <button class="btn-grim" type="button" onclick="toggleModal(true)">📖 Grimório</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="top-controls">
+        <span class="label-muted">Tempos Verbais Ativos</span>
+        <div class="mode-switch">
+          <button id="btn-choice" class="mode-btn active" type="button" onclick="setMode('choice')">🎯 Múltipla Escolha</button>
+          <button id="btn-type" class="mode-btn" type="button" onclick="setMode('type')">⌨️ Digitar</button>
+        </div>
+      </div>
+      <div id="tense-pills" class="pills"></div>
+    </section>
+
+    <section class="card">
+      <div class="q-meta">
+        <span id="q-tense" class="tense-tag">Presente</span>
+        <span id="q-type" class="verb-type">Regular</span>
+      </div>
+
+      <div class="prompt-box">
+        <div class="label-muted">Conjugue o verbo</div>
+        <div style="margin-top:8px;">
+          <div class="verb-pill">
+            <span id="q-verb" class="verb-inf">HABLAR</span>
+            <span id="q-meaning" class="verb-mean">(falar)</span>
+          </div>
+        </div>
+        <div class="pronoun-line">
+          Pessoa: <span id="q-pronoun" class="pronoun-val">Yo</span>
+        </div>
+      </div>
+
+      <div class="sentence-box">
+        <p id="q-sentence" class="sentence-es">"Yo ______ español."</p>
+        <p id="q-translation" class="sentence-pt">(Eu falo espanhol.)</p>
+      </div>
+
+      <div id="choice-box" class="choices"></div>
+
+      <div id="type-box" class="type-area">
+        <input id="answer-input" class="type-input" type="text" placeholder="Digite a conjugação..." autocomplete="off" />
+        <div class="accents">
+          <button class="acc-btn" type="button" onclick="addChar('á')">á</button>
+          <button class="acc-btn" type="button" onclick="addChar('é')">é</button>
+          <button class="acc-btn" type="button" onclick="addChar('í')">í</button>
+          <button class="acc-btn" type="button" onclick="addChar('ó')">ó</button>
+          <button class="acc-btn" type="button" onclick="addChar('ú')">ú</button>
+          <button class="acc-btn" type="button" onclick="addChar('ñ')">ñ</button>
+        </div>
+        <button class="primary-btn" type="button" onclick="checkTyped()">Verificar Resposta ✨</button>
+      </div>
+
+      <div id="feedback-box" class="feedback">
+        <div id="feedback-banner" class="banner ok">
+          <div>
+            <div id="feedback-title" style="font-weight:900;font-size:16px;"></div>
+            <div id="feedback-sub" style="font-size:13px;font-weight:700;"></div>
+          </div>
+          <span id="feedback-icon" style="font-size:26px;">🎉</span>
+        </div>
+
+        <div class="table-card">
+          <div id="table-title" class="label-muted" style="color:#4338ca;"></div>
+          <div id="conj-grid" class="conj-grid"></div>
+        </div>
+
+        <button class="next-btn" type="button" onclick="nextQuestion()">Próximo Desafio ➡️</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="grimoire-modal" class="modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 style="margin:0;font-size:18px;">📖 Grimório dos Tempos Verbais</h2>
+        <button class="close-btn" type="button" onclick="toggleModal(false)">✕</button>
+      </div>
+      <div class="tip-item"><strong>Presente:</strong> Ações habituais e fatos atuais. (-AR: -o, -as, -a, -amos, -áis, -an)</div>
+      <div class="tip-item"><strong>Pretérito Indefinido:</strong> Passado concluído em tempo definido (ayer, el año pasado).</div>
+      <div class="tip-item"><strong>Pretérito Perfecto:</strong> Passado recente ou ligado ao presente (hoy, esta semana) = <em>haber</em> + particípio (-ado/-ido).</div>
+      <div class="tip-item"><strong>Pretérito Imperfecto:</strong> Hábitos ou descrições no passado (-aba / -ía). Só 3 irregulares: <em>ser (era), ir (iba), ver (veía)</em>.</div>
+      <div class="tip-item"><strong>Imperativo Afirmativo:</strong> Ordens/pedidos diretos. Sem "Yo". Irregulares de Tú: <em>di, haz, ve, pon, sal, sé, ten, ven</em>.</div>
+    </div>
+  </div>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+
+    var TENSES = [
+      { id: "presente", label: "Presente" },
+      { id: "indefinido", label: "Pret. Indefinido" },
+      { id: "perfecto", label: "Pret. Perfecto" },
+      { id: "imperfecto", label: "Pret. Imperfecto" },
+      { id: "imperativo", label: "Imperativo" }
+    ];
+
+    var PRONOUNS = ["Yo", "Tú", "Él/Ella/Ud.", "Nosotros", "Vosotros", "Ellos/Ellas/Uds."];
+
+    var VERBS = [
+      {
+        infinitive: "HABLAR",
+        meaning: "falar",
+        type: "Regular (-AR)",
+        tenses: {
+          presente: ["hablo", "hablas", "habla", "hablamos", "habláis", "hablan"],
+          indefinido: ["hablé", "hablaste", "habló", "hablamos", "hablasteis", "hablaron"],
+          perfecto: ["he hablado", "has hablado", "ha hablado", "hemos hablado", "habéis hablado", "han hablado"],
+          imperfecto: ["hablaba", "hablabas", "hablaba", "hablábamos", "hablabais", "hablaban"],
+          imperativo: ["—", "habla", "hable", "hablemos", "hablad", "hablen"]
+        },
+        sentences: {
+          presente: ["______ español con mis amigos.", "Falo espanhol com meus amigos."],
+          indefinido: ["Ayer ______ con la profesora.", "Ontem falei com a professora."],
+          perfecto: ["Hoy ______ por teléfono.", "Hoje falei ao telefone."],
+          imperfecto: ["De niño, ______ muy rápido.", "Quando criança, falava muito rápido."],
+          imperativo: ["¡______ más despacio!", "Fale mais devagar!"]
+        }
+      },
+      {
+        infinitive: "COMER",
+        meaning: "comer",
+        type: "Regular (-ER)",
+        tenses: {
+          presente: ["como", "comes", "come", "comemos", "coméis", "comen"],
+          indefinido: ["comí", "comiste", "comió", "comimos", "comisteis", "comieron"],
+          perfecto: ["he comido", "has comido", "ha comido", "hemos comido", "habéis comido", "han comido"],
+          imperfecto: ["comía", "comías", "comía", "comíamos", "comíais", "comían"],
+          imperativo: ["—", "come", "coma", "comamos", "comed", "coman"]
+        },
+        sentences: {
+          presente: ["______ frutas en el desayuno.", "Como frutas no café da manhã."],
+          indefinido: ["Anoche ______ paella.", "Ontem à noite comi paella."],
+          perfecto: ["Hoy ______ muy bien.", "Hoje comi muito bem."],
+          imperfecto: ["Antes ______ muchos dulces.", "Antes comia muitos doces."],
+          imperativo: ["¡______ toda la comida!", "Coma toda a comida!"]
+        }
+      },
+      {
+        infinitive: "VIVIR",
+        meaning: "viver / morar",
+        type: "Regular (-IR)",
+        tenses: {
+          presente: ["vivo", "vives", "vive", "vivimos", "vivís", "viven"],
+          indefinido: ["viví", "viviste", "vivió", "vivimos", "vivisteis", "vivieron"],
+          perfecto: ["he vivido", "has vivido", "ha vivido", "hemos vivido", "habéis vivido", "han vivido"],
+          imperfecto: ["vivía", "vivías", "vivía", "vivíamos", "vivíais", "vivían"],
+          imperativo: ["—", "vive", "viva", "vivamos", "vivid", "vivan"]
+        },
+        sentences: {
+          presente: ["______ cerca de aquí.", "Moro perto daqui."],
+          indefinido: ["El año pasado ______ allí.", "No ano passado morei lá."],
+          perfecto: ["Nunca ______ fuera del país.", "Nunca morei fora do país."],
+          imperfecto: ["En esa época ______ en el centro.", "Nessa época morava no centro."],
+          imperativo: ["¡______ con alegría!", "Viva com alegria!"]
+        }
+      },
+      {
+        infinitive: "SER",
+        meaning: "ser",
+        type: "Irregular",
+        tenses: {
+          presente: ["soy", "eres", "es", "somos", "sois", "son"],
+          indefinido: ["fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron"],
+          perfecto: ["he sido", "has sido", "ha sido", "hemos sido", "habéis sido", "han sido"],
+          imperfecto: ["era", "eras", "era", "éramos", "erais", "eran"],
+          imperativo: ["—", "sé", "sea", "seamos", "sed", "sean"]
+        },
+        sentences: {
+          presente: ["______ estudiante.", "Sou estudante."],
+          indefinido: ["La clase ______ genial ayer.", "A aula foi ótima ontem."],
+          perfecto: ["Esta semana ______ intensa.", "Esta semana foi intensa."],
+          imperfecto: ["Cuando ______ joven, corría más.", "Quando era jovem, corria mais."],
+          imperativo: ["¡______ paciente!", "Seja paciente!"]
+        }
+      },
+      {
+        infinitive: "IR",
+        meaning: "ir",
+        type: "Irregular",
+        tenses: {
+          presente: ["voy", "vas", "va", "vamos", "vais", "van"],
+          indefinido: ["fui", "fuiste", "fue", "fuimos", "fuisteis", "fueron"],
+          perfecto: ["he ido", "has ido", "ha ido", "hemos ido", "habéis ido", "han ido"],
+          imperfecto: ["iba", "ibas", "iba", "íbamos", "ibais", "iban"],
+          imperativo: ["—", "ve", "vaya", "vamos", "id", "vayan"]
+        },
+        sentences: {
+          presente: ["______ al trabajo ahora.", "Vou ao trabalho agora."],
+          indefinido: ["Ayer ______ al cine.", "Ontem fui ao cinema."],
+          perfecto: ["Hoy ______ al mercado.", "Hoje fui ao mercado."],
+          imperfecto: ["Antes ______ mucho al parque.", "Antes ia muito ao parque."],
+          imperativo: ["¡______ a casa ya!", "Vá para casa já!"]
+        }
+      },
+      {
+        infinitive: "TENER",
+        meaning: "ter",
+        type: "Irregular",
+        tenses: {
+          presente: ["tengo", "tienes", "tiene", "tenemos", "tenéis", "tienen"],
+          indefinido: ["tuve", "tuviste", "tuvo", "tuvimos", "tuvisteis", "tuvieron"],
+          perfecto: ["he tenido", "has tenido", "ha tenido", "hemos tenido", "habéis tenido", "han tenido"],
+          imperfecto: ["tenía", "tenías", "tenía", "teníamos", "teníais", "tenían"],
+          imperativo: ["—", "ten", "tenga", "tengamos", "tened", "tengan"]
+        },
+        sentences: {
+          presente: ["______ mucha energía hoy.", "Tenho muita energia hoje."],
+          indefinido: ["Ayer ______ una idea buena.", "Ontem tive uma ideia boa."],
+          perfecto: ["Hoy ______ suerte.", "Hoje tive sorte."],
+          imperfecto: ["De pequeño ______ un gato.", "Quando criança tinha um gato."],
+          imperativo: ["¡______ cuidado!", "Tenha cuidado!"]
+        }
+      },
+      {
+        infinitive: "HACER",
+        meaning: "fazer",
+        type: "Irregular",
+        tenses: {
+          presente: ["hago", "haces", "hace", "hacemos", "hacéis", "hacen"],
+          indefinido: ["hice", "hiciste", "hizo", "hicimos", "hicisteis", "hicieron"],
+          perfecto: ["he hecho", "has hecho", "ha hecho", "hemos hecho", "habéis hecho", "han hecho"],
+          imperfecto: ["hacía", "hacías", "hacía", "hacíamos", "hacíais", "hacían"],
+         
