@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>VerboMágico - Espanhol</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ec4899" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #fdf2f8 0%, #eff6ff 50%, #f5f3ff 100%);
+      min-height: 100vh;
+      user-select: none;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    .card-shadow {
+      box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.15), 0 8px 10px -6px rgba(139, 92, 246, 0.1);
+    }
+    .btn-bounce:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body class="text-slate-800 pb-12">
+
+  <header class="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-pink-100 px-4 py-3">
+    <div class="max-w-3xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-3xl animate-float inline-block">🦙</span>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+            VerboMágico
+          </h1>
+          <p class="text-[11px] text-slate-500 font-semibold -mt-1">Espanhol Interativo</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs sm:text-sm font-extrabold border border-amber-200">
+          <span>🔥</span>
+          <span id="streak-display">0</span>
+        </div>
+        <div class="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs sm:text-sm font-extrabold border border-purple-200">
+          <span>⭐</span>
+          <span id="xp-display">0</span> XP
+        </div>
+        <button onclick="toggleGrimoire()" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow hover:opacity-95 btn-bounce flex items-center gap-1">
+          <span>📖</span>
+          <span class="hidden sm:inline">Grimório</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 pt-5 space-y-5">
+
+    <section class="bg-white rounded-3xl p-4 sm:p-5 card-shadow border border-pink-100 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Tempos Verbais Ativos</span>
+        <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+          <button id="mode-choice" onclick="setGameMode('choice')" class="px-3 py-1.5 rounded-lg bg-white text-pink-600 shadow-sm transition">
+            🎯 Múltipla Escolha
+          </button>
+          <button id="mode-type" onclick="setGameMode('type')" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-700 transition">
+            ⌨️ Digitar
+          </button>
+        </div>
+      </div>
+
+      <div id="tense-filters" class="flex flex-wrap gap-2"></div>
+    </section>
+
+    <section id="game-card" class="bg-white rounded-3xl p-6 sm:p-8 card-shadow border-2 border-purple-100 relative overflow-hidden">
+      <div class="flex items-center justify-between mb-4">
+        <span id="question-tense-badge" class="px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold bg-pink-100 text-pink-700">
+          Presente
+        </span>
+        <span id="question-verb-type" class="text-xs font-bold text-slate-400">
+          Verbo Regular (-AR)
+        </span>
+      </div>
+
+      <div class="text-center my-4 sm:my-6">
+        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Conjugue o verbo</p>
+        <div class="inline-flex items-baseline gap-2 bg-gradient-to-r from-pink-50 to-purple-50 px-6 py-3 rounded-2xl border border-pink-200">
+          <span id="prompt-verb" class="text-3xl sm:text-4xl font-display font-bold text-slate-800">HABLAR</span>
+          <span id="prompt-meaning" class="text-sm sm:text-base font-bold text-pink-500">(falar)</span>
+        </div>
+
+        <div class="mt-5">
+          <span class="text-slate-500 font-semibold text-base sm:text-lg">Pessoa: </span>
+          <span id="prompt-pronoun" class="text-2xl sm:text-3xl font-display font-bold text-indigo-600 underline decoration-wavy decoration-pink-400 underline-offset-4">
+            Yo
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 rounded-2xl p-3.5 text-center border border-slate-100 mb-6">
+        <p id="context-sentence" class="text-base sm:text-lg font-bold text-slate-700">
+          "Yo ______ español todos los días."
+        </p>
+        <p id="context-translation" class="text-xs text-slate-400 mt-1">
+          (Eu falo espanhol todos os dias.)
+        </p>
+      </div>
+
+      <div id="choice-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+      <div id="type-container" class="hidden space-y-3">
+        <div class="flex gap-2">
+          <input
+            type="text"
+            id="type-input"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="Digite a conjugação..."
+            class="w-full text-center text-xl font-bold px-4 py-3.5 rounded-2xl border-2 border-purple-200 focus:border-pink-500 focus:outline-none bg-purple-50/30"
+          />
+        </div>
+        <div class="flex justify-center gap-1.5 flex-wrap">
+          <button type="button" onclick="insertAccent('á')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-pink-100 font-bold text-slate-700 btn-bounce">á</button>
+          <button type="button" onclick="insertAccent('é')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-pink-100 font-bold text-slate-700 btn-bounce">é</button>
+          <button type="button" onclick="insertAccent('í')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-pink-100 font-bold text-slate-700 btn-bounce">í</button>
+          <button type="button" onclick="insertAccent('ó')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-pink-100 font-bold text-slate-700 btn-bounce">ó</button>
+          <button type="button" onclick="insertAccent('ú')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-pink-100 font-bold text-slate-700 btn-bounce">ú</button>
+          <button type="button" onclick="insertAccent('ñ')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-pink-100 font-bold text-slate-700 btn-bounce">ñ</button>
+        </div>
+        <button onclick="checkTypedAnswer()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-display font-bold text-lg shadow-md hover:opacity-95 btn-bounce">
+          Verificar Resposta ✨
+        </button>
+      </div>
+
+      <div id="feedback-box" class="hidden mt-6 pt-5 border-t-2 border-dashed border-slate-200 space-y-4">
+        <div id="feedback-banner" class="p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <h3 id="feedback-title" class="font-display font-bold text-lg"></h3>
+            <p id="feedback-subtitle" class="text-sm font-semibold"></p>
+          </div>
+          <span id="feedback-emoji" class="text-3xl">🎉</span>
+        </div>
+
+        <div class="bg-indigo-50/70 rounded-2xl p-4 border border-indigo-100">
+          <p class="text-xs font-extrabold uppercase tracking-wider text-indigo-500 mb-2">
+            Tabela completa: <span id="table-verb-title"></span>
+          </p>
+          <div id="conjugation-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs sm:text-sm"></div>
+        </div>
+
+        <button onclick="nextQuestion()" class="w-full py-3.5 rounded-2xl bg-slate-900 text-white font-display font-bold text-lg shadow hover:bg-slate-800 btn-bounce">
+          Próximo Desafio ➡️
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <div id="grimoire-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📖</span>
+          <h2 class="text-xl font-display font-bold text-slate-800">Grimório dos Tempos Verbais</h2>
+        </div>
+        <button onclick="toggleGrimoire()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">✕</button>
+      </div>
+
+      <div class="space-y-4 text-sm">
+        <div class="p-3.5 rounded-2xl bg-pink-50 border border-pink-100">
+          <h3 class="font-bold text-pink-700 text-base">1. Presente de Indicativo</h3>
+          <p class="text-slate-600 mt-1">Ações habituais ou verdades atuais. <br><strong>Regulares:</strong> -AR (-o, -as, -a, -amos, -áis, -an) | -ER (-o, -es, -e, -emos, -éis, -en) | -IR (-o, -es, -e, -imos, -ís, -en).</p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-100">
+          <h3 class="font-bold text-amber-800 text-base">2. Pretérito Indefinido (Passado concluído)</h3>
+          <p class="text-slate-600 mt-1">Ações pontuais terminadas no passado (ayer, el año pasado). <br><strong>Regulares:</strong> -AR (-é, -aste, -ó, -amos, -asteis, -aron) | -ER/-IR (-í, -iste, -ió, -imos, -isteis, -ieron).</p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-100">
+          <h3 class="font-bold text-emerald-800 text-base">3. Pretérito Perfecto Compuesto</h3>
+          <p class="text-slate-600 mt-1">Passado recente ou ligado ao presente (hoy, esta semana, nunca). <br><strong>Fórmula:</strong> <em>he, has, ha, hemos, habéis, han</em> + <strong>Particípio</strong> (-ado / -ido; irregulares: hecho, dicho, puesto, visto, escrito, vuelto).</p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-sky-50 border border-sky-100">
+          <h3 class="font-bold text-sky-800 text-base">4. Pretérito Imperfecto</h3>
+          <p class="text-slate-600 mt-1">Hábitos no passado, descrições e cenários ("antigamente eu fazia..."). <br><strong>Regulares:</strong> -AR (-aba, -abas, -aba, -ábamos, -abais, -aban) | -ER/-IR (-ía, -ías, -ía, -íamos, -íais, -ían). <br><strong>Únicos 3 irregulares:</strong> <em>ser (era), ir (iba), ver (veía)</em>.</p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-purple-50 border border-purple-100">
+          <h3 class="font-bold text-purple-800 text-base">5. Imperativo Afirmativo</h3>
+          <p class="text-slate-600 mt-1">Ordens, pedidos e conselhos diretos. Não existe para "Yo". <br><strong>Dica para Tú:</strong> geralmente igual à 3ª pessoa do singular do Presente (ex: <em>habla, come, vive</em>), exceto os 8 rebeldes: <em>di, haz, ve, pon, sal, sé, ten, ven</em>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+
+    const TENSES = [
+      { id: 'presente', label: 'Presente', color: 'pink' },
+      { id: 'indefinido', label: 'Pret. Indefinido', color: 'amber' },
+      { id: 'perfecto', label: 'Pret. Perfecto', color: 'emerald' },
+      { id: 'imperfecto', label: 'Pret. Imperfecto', color: 'sky' },
+      { id: 'imperativo', label: 'Imperativo', color: 'purple' }
+    ];
+
+    const PRONOUNS = ['Yo', 'Tú', 'Él/Ella/Ud.', 'Nosotros', 'Vosotros', 'Ellos/Ellas/Uds.'];
+
+    const VERBS = [
+      {
+        infinitive: 'HABLAR',
+        meaning: 'falar',
+        type: 'Regular (-AR)',
+        tenses: {
+          presente: ['hablo', 'hablas', 'habla', 'hablamos', 'habláis', 'hablan'],
+          indefinido: ['hablé', 'hablaste', 'habló', 'hablamos', 'hablasteis', 'hablaron'],
+          perfecto: ['he hablado', 'has hablado', 'ha hablado', 'hemos hablado', 'habéis hablado', 'han hablado'],
+          imperfecto: ['hablaba', 'hablabas', 'hablaba', 'hablábamos', 'hablabais', 'hablaban'],
+          imperativo: ['—', 'habla', 'hable', 'hablemos', 'hablad', 'hablen']
+        },
+        sentences: {
+          presente: ['______ español con mis amigos.', 'falo espanhol com meus amigos.'],
+          indefinido: ['Ayer ______ con la profesora.', 'Ontem falei com a professora.'],
+          perfecto: ['Hoy ______ mucho por teléfono.', 'Hoje falei muito ao telefone.'],
+          imperfecto: ['De niño, ______ muy rápido.', 'Quando criança, falava muito rápido.'],
+          imperativo: ['¡______ más despacio, por favor!', 'Fale mais devagar, por favor!']
+        }
+      },
+      {
+        infinitive: 'COMER',
+        meaning: 'comer',
+        type: 'Regular (-ER)',
+        tenses: {
+          presente: ['como', 'comes', 'come', 'comemos', 'coméis', 'comen'],
+          indefinido: ['comí', 'comiste', 'comió', 'comimos', 'comisteis', 'comieron'],
+          perfecto: ['he comido', 'has comido', 'ha comido', 'hemos comido', 'habéis comido', 'han comido'],
+          imperfecto: ['comía', 'comías', 'comía', 'comíamos', 'comíais', 'comían'],
+          imperativo: ['—', 'come', 'coma', 'comamos', 'comed', 'coman']
+        },
+        sentences: {
+          presente: ['Siempre ______ frutas en el desayuno.', 'Sempre como frutas no café da manhã.'],
+          indefinido: ['Anoche ______ paella en Madrid.', 'Ontem à noite comi paella em Madri.'],
+          perfecto: ['Todavía no ______ nada hoy.', 'Ainda não comi nada hoje.'],
+          imperfecto: ['Antes ______ muchos dulces.', 'Antes comia muitos doces.'],
+          imperativo: ['¡______ toda la verdura!', 'Coma toda a verdura!']
+        }
+      },
+      {
+        infinitive: 'VIVIR',
+        meaning: 'viver / morar',
+        type: 'Regular (-IR)',
+        tenses: {
+          presente: ['vivo', 'vives', 'vive', 'vivimos', 'vivís', 'viven'],
+          indefinido: ['viví', 'viviste', 'vivió', 'vivimos', 'vivisteis', 'vivieron'],
+          perfecto: ['he vivido', 'has vivido', 'ha vivido', 'hemos vivido', 'habéis vivido', 'han vivido'],
+          imperfecto: ['vivía', 'vivías', 'vivía', 'vivíamos', 'vivíais', 'vivían'],
+          imperativo: ['—', 'vive', 'viva', 'vivamos', 'vivid', 'vivan']
+        },
+        sentences: {
+          presente: ['______ cerca de la playa.', 'Moro perto da praia.'],
+          indefinido: ['El año pasado ______ en Buenos Aires.', 'Ano passado morei em Buenos Aires.'],
+          perfecto: ['Nunca ______ en otro país.', 'Nunca morei em outro país.'],
+          imperfecto: ['En 2015 ______ en un apartamento pequeño.', 'Em 2015 morava em um apartamento pequeno.'],
+          imperativo: ['¡______ la vida con alegría!', 'Viva a vida com alegria!']
+        }
+      },
+      {
+        infinitive: 'SER',
+        meaning: 'ser',
+        type: 'Irregular Essencial',
+        tenses: {
+          presente: ['soy', 'eres', 'es', 'somos', 'sois', 'son'],
+          indefinido: ['fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron'],
+          perfecto: ['he sido', 'has sido', 'ha sido', 'hemos sido', 'habéis sido', 'han sido'],
+          imperfecto: ['era', 'eras', 'era', 'éramos', 'erais', 'eran'],
+          imperativo: ['—', 'sé', 'sea', 'seamos', 'sed', 'sean']
+        },
+        sentences: {
+          presente: ['______ estudiante de medicina.', 'Sou estudante de medicina.'],
+          indefinido: ['La fiesta ______ increíble ayer.', 'A festa foi incrível ontem.'],
+          perfecto: ['Esta semana ______ muy productiva.', 'Esta semana foi muito produtiva.'],
+          imperfecto: ['Cuando ______ joven, jugaba al fútbol.', 'Quando era jovem, jogava futebol.'],
+          imperativo: ['¡______ paciente y amable!', 'Seja paciente e amável!']
+        }
+      },
+      {
+        infinitive: 'IR',
+        meaning: 'ir',
+        type: 'Irregular Essencial',
+        tenses: {
+          presente: ['voy', 'vas', 'va', 'vamos', 'vais', 'van'],
+          indefinido: ['fui', 'fuiste', 'fue', 'fuimos', 'fuisteis', 'fueron'],
+          perfecto: ['he ido', 'has ido', 'ha ido', 'hemos ido', 'habéis ido', 'han ido'],
+          imperfecto: ['iba', 'ibas', 'iba', 'íbamos', 'ibais', 'iban'],
+          imperativo: ['—', 've', 'vaya', 'vamos', 'id', 'vayan']
+        },
+        sentences: {
+          presente: ['______ al gimnasio por la tarde.', 'Vou à academia à tarde.'],
+          indefinido: ['El domingo ______ al cine.', 'No domingo fui ao cinema.'],
+          perfecto: ['Esta mañana ______ al médico.', 'Esta manhã fui ao médico.'],
+          imperfecto: ['Todos los veranos ______ a la montaña.', 'Todos os verões ia para a montanha.'],
+          imperativo: ['¡______ directo a casa!', 'Vá direto para casa!']
+        }
+      },
+      {
+        infinitive: 'TENER',
+        meaning: 'ter',
+        type: 'Irregular Essencial',
+        tenses: {
+          presente: ['tengo', 'tienes', 'tiene', 'tenemos', 'tenéis', 'tienen'],
+          indefinido: ['tuve', 'tuviste', 'tuvo', 'tuvimos', 'tuvisteis', 'tuvieron'],
+          perfecto: ['he tenido', 'has tenido', 'ha tenido', 'hemos tenido', 'habéis tenido', 'han tenido'],
+          imperfecto: ['tenía', 'tenías', 'tenía', 'teníamos', 'teníais', 'tenían'],
+          imperativo: ['—', 'ten', 'tenga', 'tengamos', 'tened', 'tengan']
+        },
+        sentences: {
+          presente: ['______ mucho trabajo hoy.', 'Tenho muito trabalho hoje.'],
+          indefinido: ['Ayer ______ una reunión importante.', 'Ontem tive uma reunião importante.'],
+          perfecto: ['Hoy ______ mucha suerte.', 'Hoje tive muita sorte.'],
+          imperfecto: ['Antes ______ un perro muy juguetón.', 'Antes tinha um cachorro muito brincalhão.'],
+          imperativo: ['¡______ cuidado al cruzar!', 'Tenha cuidado ao atravessar!']
+        }
+      },
+      {
+        infinitive: 'HACER',
+        meaning: 'fazer',
+        type: 'Irregular Essencial',
+        tenses: {
+          presente: ['hago', 'haces', 'hace', 'hacemos', 'hacéis', 'hacen'],
+          indefinido: ['hice', 'hiciste', 'hizo', 'hicimos', 'hicisteis', 'hicieron'],
+          perfecto: ['he hecho', 'has hecho', 'ha hecho', 'hemos hecho', 'habéis hecho', 'han hecho'],
+          imperfecto: ['hacía', 'hacías', 'hacía', 'hacíamos', 'hacíais', 'hacían'],
+          imperativo: ['—', 'haz', 'haga', 'hagamos', 'haced', 'hagan']
+        },
+        sentences: {
+          presente: ['Siempre ______ la tarea por la noche.', 'Sempre faço a tarefa à noite.'],
+          indefinido: ['El sábado ______ un pastel de chocolate.', 'No sábado fiz um bolo de chocolate.'],
+          perfecto: ['¿Qué ______ hoy por la mañana?', 'O que você fez hoje de manhã?'],
+          imperfecto: ['Cuando era niño, ______ mucho deporte.', 'Quando era criança, praticava muito esporte.'],
+          imperativo: ['¡______ lo que te digo!', 'Faça o que eu te digo!']
+        }
+      },
+      {
+        infinitive: 'DECIR',
+        meaning: 'dizer',
+        type: 'Irregular Essencial',
+        tenses: {
+          presente: ['digo', 'dices', 'dice', 'decimos', 'decís', 'dicen'],
+          indefinido: ['dije', 'dijiste', 'dijo', 'dijimos', 'dijisteis', 'dijeron'],
+          perfecto: ['he dicho', 'has dicho',
