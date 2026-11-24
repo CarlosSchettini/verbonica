@@ -1,2 +1,2 @@
 # verbomagico
-Made with IA - For student propose
+Mini jogo para estudar conjugação verbal em espanhol.
